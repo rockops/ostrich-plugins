@@ -1,0 +1,6 @@
+name: basic
+version: 1.0.2
+description: "A basic Ostrich plugin"
+# default runner for operations in this template
+runner:
+  kind: inprocess
