@@ -1,0 +1,25 @@
+plugin:
+  # Name of the plugin
+  name: my-backend-app
+  # Version of the plugin
+  version: 0.0.1
+  # Short description
+  business_name: My Backend Application
+
+template:
+  # Kind of template to use
+  kind: backend
+  # [optional] Container runtime to use (docker|podman) default=docker
+  runtime: docker
+
+  params:
+    input:
+      # [optional] relative path to the source folder (containing pom.xml, package.json, etc.)
+      src: src
+    # [optional] Name of the resulting docker image. Default is the plugin name.
+    image_name: my-backend-app
+
+    # [optional] Buildpack builder to use
+    builder:
+      name: paketobuildpacks/builder-jammy-base
+      args: []

@@ -1,0 +1,24 @@
+runner:
+  kind: container
+  image: buildpacksio/pack:latest
+
+env:
+  PACK_VOLUME_KEY: [[ plugin.name ]]
+
+commands:
+- cmd:
+  - build
+  - [[ template.params.image_name or plugin.name ]]
+  - --builder
+  - [[ template.params.builder.name ]]
+  - --path
+  - [[ "" | input("src") ]]
+  - --trust-builder
+  - --volume
+  - /etc/ssl/certs:/etc/ssl/certs
+  [% for arg in template.params.builder.get('args', []) %]
+  - [[ arg ]]
+  [% endfor %]
+  [% for arg in params.operationParams %]
+  - [[ arg ]]
+  [% endfor %]
