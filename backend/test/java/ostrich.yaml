@@ -1,3 +1,4 @@
+# ====== backend configuration sample =======
 plugin:
   # Name of the plugin
   name: my-backend-app
@@ -13,13 +14,25 @@ template:
   runtime: docker
 
   params:
+    port_external: 8081
     input:
       # [optional] relative path to the source folder (containing pom.xml, package.json, etc.)
       src: src
     # [optional] Name of the resulting docker image. Default is the plugin name.
     image_name: my-backend-app
+    registry: harbor.kubelb.home/ostrich/docker
 
     # [optional] Buildpack builder to use
     builder:
       name: paketobuildpacks/builder-jammy-base
       args: []
+
+    gateway:
+      create: false
+      name: envoy
+      namespace: envoy-gateway
+
+    kubernetes:
+      namespace: ostrich-test
+      exposure:
+        hostname: my-backend-app.kubelb.home

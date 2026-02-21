@@ -1,0 +1,15 @@
+{{- if and .Values.exposure.hostname .Values.exposure.gateway.create }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Release.Name }}-gateway
+spec:
+  gatewayClassName: {{ .Values.exposure.gateway.gatewayClass | quote }}
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: Same
+{{- end }}

@@ -1,0 +1,147 @@
+import logging
+import os
+import sys
+
+def print_usage(error_msg=None):
+    if error_msg:
+        logging.error(error_msg)
+    logging.error("Usage: ost run helm <subcommand> [args...]")
+    logging.error("Available subcommands: deploy, delete, template")
+    sys.exit(1)
+
+
+def deploy(args):
+    plugin_name = "[[ plugin.name ]]"
+    registry = "[[ template.params.registry or "" ]]"
+    image_name_base = "[[ template.params.image_name or plugin.name ]]"
+    image_name = f"{registry.rstrip('/')}/{image_name_base}" if registry else image_name_base
+    namespace = "[[ template.params.kubernetes.namespace or 'default' ]]"
+
+    # The kubernetes folder is rendered in the template instance directory
+    chart_path = "[[ "helm/kubernetes" | fromTemplateInstance ]]"
+
+    if not os.path.exists(chart_path):
+        raise OstrichException(f"Helm chart not found at {chart_path}. Did you run 'ost template'?")
+
+    logging.info(f"Deploying {plugin_name} to namespace {namespace}...")
+
+    # Build the helm command
+    # 'run' is available in global scope (equivalent to subprocess.run)
+    helm_cmd = [
+        "helm", "upgrade", "--install", plugin_name, chart_path,
+        "--namespace", namespace,
+        "--create-namespace",
+        "--set", f"image.repository={image_name}",
+        "--set", f"image.tag=latest"
+    ]
+
+    # Add any additional arguments passed to 'ost run helm deploy'
+    if args:
+        helm_cmd.extend(args)
+
+    if _dryRun:
+        logging.info(f"Dry run: {' '.join(helm_cmd)}")
+    else:
+        # Check if helm is installed
+        try:
+            check_helm = run(["helm", "version"], capture_output=True)
+            if check_helm.returncode != 0:
+                raise OstrichException("Helm binary not found or not working.")
+        except Exception:
+             raise OstrichException("Helm binary not found. Please install helm to use the deploy task.")
+
+        result = run(helm_cmd)
+        if result.returncode != 0:
+            raise OstrichException(f"Helm deployment failed with exit code {result.returncode}")
+        
+        logging.info(f"Successfully deployed {plugin_name} to namespace {namespace}")
+
+def delete(args):
+    plugin_name = "[[ plugin.name ]]"
+    namespace = "[[ template.params.kubernetes.namespace or 'default' ]]"
+
+    logging.info(f"Deleting {plugin_name} from namespace {namespace}...")
+
+    helm_cmd = [
+        "helm", "uninstall", plugin_name,
+        "--namespace", namespace
+    ]
+
+    if args:
+        helm_cmd.extend(args)
+
+    if _dryRun:
+        logging.info(f"Dry run: {' '.join(helm_cmd)}")
+    else:
+        try:
+            check_helm = run(["helm", "version"], capture_output=True)
+            if check_helm.returncode != 0:
+                raise OstrichException("Helm binary not found or not working.")
+        except Exception:
+             raise OstrichException("Helm binary not found. Please install helm to use the delete task.")
+
+        result = run(helm_cmd)
+        if result.returncode != 0:
+            raise OstrichException(f"Helm delete failed with exit code {result.returncode}")
+        
+        logging.info(f"Successfully deleted {plugin_name} from namespace {namespace}")
+
+def template(args):
+    plugin_name = "[[ plugin.name ]]"
+    registry = "[[ template.params.registry or "" ]]"
+    image_name_base = "[[ template.params.image_name or plugin.name ]]"
+    image_name = f"{registry.rstrip('/')}/{image_name_base}" if registry else image_name_base
+    namespace = "[[ template.params.kubernetes.namespace or 'default' ]]"
+    output_dir = "[[ template.params.output.helm | here ]]"
+
+    # The kubernetes folder is rendered in the template instance directory
+    chart_path = "[[ "helm/kubernetes" | fromTemplateInstance ]]"
+
+    if not os.path.exists(chart_path):
+        raise OstrichException(f"Helm chart not found at {chart_path}. Did you run 'ost template'?")
+
+    logging.info(f"Templating {plugin_name} to {output_dir}...")
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    helm_cmd = [
+        "helm", "template", plugin_name, chart_path,
+        "--namespace", namespace,
+        "--output-dir", output_dir,
+        "--set", f"image.repository={image_name}",
+        "--set", f"image.tag=latest"
+    ]
+
+    if args:
+        helm_cmd.extend(args)
+
+    if _dryRun:
+        logging.info(f"Dry run: {' '.join(helm_cmd)}")
+    else:
+        try:
+            check_helm = run(["helm", "version"], capture_output=True)
+            if check_helm.returncode != 0:
+                raise OstrichException("Helm binary not found or not working.")
+        except Exception:
+             raise OstrichException("Helm binary not found. Please install helm to use the template task.")
+
+        result = run(helm_cmd)
+        if result.returncode != 0:
+            raise OstrichException(f"Helm template failed with exit code {result.returncode}")
+        
+        logging.info(f"Successfully templated {plugin_name} to {output_dir}")
+
+if not _argv:
+    print_usage("Subcommand is missing.")
+
+subcommand = _argv[0]
+subcommand_args = _argv[1:]
+
+if subcommand == "deploy":
+    deploy(subcommand_args)
+elif subcommand == "delete":
+    delete(subcommand_args)
+elif subcommand == "template":
+    template(subcommand_args)
+else:
+    print_usage(f"Unknown subcommand: {subcommand}")

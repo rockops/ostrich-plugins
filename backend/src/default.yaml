@@ -1,0 +1,23 @@
+template:
+  runtime: docker
+  params:
+    port: 8080
+    input:
+      src: src
+    output:
+      helm: "helm-[[ plugin.name ]]"
+    # [optional] Docker registry to use. If set, it will be prepended to the image name.
+    registry: ""
+    # [optional] Buildpack builder to use
+    builder:
+      name: paketobuildpacks/builder-jammy-base
+      args: []
+    gateway:
+      create: false
+      name: ""
+      namespace: ""
+      gatewayClass: ""
+    kubernetes:
+      namespace: "[[ plugin.name ]]"
+      exposure:
+        hostname: ""

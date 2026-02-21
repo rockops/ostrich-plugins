@@ -8,7 +8,7 @@ env:
 commands:
 - cmd:
   - build
-  - [[ template.params.image_name or plugin.name ]]
+  - [[ (template.params.registry | noslash + "/" if template.params.registry else "") + (template.params.image_name or plugin.name) ]]
   - --builder
   - [[ template.params.builder.name ]]
   - --path
@@ -16,6 +16,8 @@ commands:
   - --trust-builder
   - --volume
   - /etc/ssl/certs:/etc/ssl/certs
+  - --network
+  - [[ template.params.builder.network or 'host' ]]
   [% for arg in template.params.builder.get('args', []) %]
   - [[ arg ]]
   [% endfor %]

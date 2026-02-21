@@ -1,0 +1,20 @@
+replicaCount: 1
+
+image:
+  repository: [[ (template.params.registry | noslash + "/" if template.params.registry else "") + (template.params.image_name or plugin.name) ]]
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: [[ template.params.port or 8080 ]]
+
+resources: {}
+ 
+exposure:
+  hostname: [[ template.params.kubernetes.exposure.hostname ]]
+  gateway:
+    create: [[ template.params.gateway.create ]]
+    name: [[ template.params.gateway.name ]]
+    namespace: [[ template.params.gateway.namespace or template.params.kubernetes.namespace ]]
+    gatewayClass: [[ template.params.gateway.gatewayClass ]]

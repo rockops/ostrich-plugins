@@ -1,0 +1,34 @@
+import logging
+
+# The image name and registry are provided via the template parameters
+registry = "[[ template.params.registry or "" ]]"
+image_name = "[[ template.params.image_name or plugin.name ]]"
+
+if not image_name:
+    raise OstrichException("The 'image_name' parameter or 'plugin.name' is required to identify containers.")
+
+full_image_name = f"{registry.rstrip('/')}/{image_name}" if registry else image_name
+
+logging.info(f"Listing containers running image: {full_image_name}")
+
+# Standard docker ps command with ancestor filter
+ps_cmd = ["docker", "ps", "--filter", f"ancestor={full_image_name}"]
+
+# Add any additional arguments passed to 'ost run ps' (e.g. -a)
+if _argv:
+    ps_cmd.extend(_argv)
+
+if _dryRun:
+    logging.info(f"Dry run: {' '.join(ps_cmd)}")
+else:
+    try:
+        # 'run' is available in global scope (equivalent to subprocess.run)
+        # We don't capture output here so it prints directly to the terminal
+        result = run(ps_cmd)
+        if result.returncode != 0:
+            raise OstrichException(f"Failed to list containers. Exit code: {result.returncode}")
+            
+    except Exception as e:
+        if isinstance(e, OstrichException):
+            raise
+        raise OstrichException(f"An error occurred while listing containers: {str(e)}")

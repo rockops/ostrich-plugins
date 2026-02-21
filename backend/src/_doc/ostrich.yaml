@@ -1,0 +1,55 @@
+plugin:
+  # Name of the plugin
+  name: my-backend-app
+  # Version of the plugin
+  version: 0.0.1
+  # Short description
+  business_name: My Backend Application
+
+template:
+  # Kind of template to use
+  kind: backend
+  # [optional] Container runtime to use (docker|podman) default=docker
+  runtime: docker
+
+  params:
+    input:
+      # [optional] relative path to the source folder (containing pom.xml, package.json, etc.)
+      src: src
+    output:
+      # [optional] Relative path to output folder for helm templating (default: the plugin name)
+      helm: "[[ plugin.name ]]"
+    # [optional] Name of the resulting docker image. Default is the plugin name.
+    image_name: my-backend-app
+
+    # [optional] Docker registry to use. If set, it will be prepended to the image name.
+    # [mandatory to publish the image and deploy it with helm]
+    registry: ""
+
+    # [optional] Buildpack builder to use
+    builder:
+      name: paketobuildpacks/builder-jammy-base
+      args: []
+
+    # [optional] Port to expose in the container
+    port: 8080
+    # [optional] External port to map to the container port. Default is the same as 'port'.
+    port_external: 8080
+
+    gateway:
+      # [optional] Whether to create a Gateway resource (default: false)
+      create: false
+      # [optional] Name of the existing Gateway to use if create is false
+      # or name of the gateway to create if create is true (default: the plugin name)
+      name: "my-backend-app"
+      # [optional] Gateway class to use if create is true (default: empty)
+      # [mandatory when create is true]
+      gatewayClass: ""
+
+    kubernetes:
+      # [optional] Namespace to deploy to
+      namespace: default
+      exposure:
+        # [optional] DNS name to expose the app on.
+        # If not set, the app will not be exposed via a Gateway.
+        hostname: ""

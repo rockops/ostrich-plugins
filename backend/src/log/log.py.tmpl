@@ -1,0 +1,51 @@
+import logging
+
+# The image name and registry are provided via the template parameters
+registry = "[[ template.params.registry or "" ]]"
+image_name = "[[ template.params.image_name or plugin.name ]]"
+
+if not image_name:
+    raise OstrichException("The 'image_name' parameter or 'plugin.name' is required to identify containers.")
+
+full_image_name = f"{registry.rstrip('/')}/{image_name}" if registry else image_name
+
+# Find container IDs running this image
+find_cmd = ["docker", "ps", "-q", "--filter", f"ancestor={full_image_name}"]
+
+try:
+    # 'run' is available in global scope (equivalent to subprocess.run)
+    result = run(find_cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise OstrichException(f"Failed to list containers: {result.stderr}")
+    
+    container_ids = result.stdout.strip().split()
+    
+    if not container_ids:
+        logging.info(f"No active containers found for image '{full_image_name}'.")
+    else:
+        # Use the first container ID found (usually the most recent one)
+        container_id = container_ids[0]
+        
+        if len(container_ids) > 1:
+            logging.info(f"Found {len(container_ids)} containers. Showing logs for: {container_id}")
+        else:
+            logging.info(f"Showing logs for container: {container_id}")
+
+        log_cmd = ["docker", "logs"]
+        
+        # Add any additional arguments passed to 'ost run log' (e.g. -f, --tail)
+        if _argv:
+            log_cmd.extend(_argv)
+        
+        log_cmd.append(container_id)
+
+        if _dryRun:
+            logging.info(f"Dry run: {' '.join(log_cmd)}")
+        else:
+            # Execute docker logs
+            run(log_cmd)
+            
+except Exception as e:
+    if isinstance(e, OstrichException):
+        raise
+    raise OstrichException(f"An error occurred while fetching logs: {str(e)}")

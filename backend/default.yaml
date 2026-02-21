@@ -1,8 +1,0 @@
-template:
-  runtime: docker
-  params:
-    input:
-      src: src
-    builder:
-      name: paketobuildpacks/builder-jammy-base
-      args: []

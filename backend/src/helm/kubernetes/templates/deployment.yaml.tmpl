@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: [[ plugin.name ]]
+  labels:
+    app: [[ plugin.name ]]
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: [[ plugin.name ]]
+  template:
+    metadata:
+      labels:
+        app: [[ plugin.name ]]
+    spec:
+      containers:
+        - name: [[ plugin.name ]]
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: [[ template.params.port or 8080 ]]
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

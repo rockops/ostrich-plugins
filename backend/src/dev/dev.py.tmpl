@@ -1,0 +1,36 @@
+import logging
+
+# The image name and registry are provided via the template parameters
+registry = "[[ template.params.registry or "" ]]"
+image_name = "[[ template.params.image_name or plugin.name ]]"
+
+if not image_name:
+    raise OstrichException("The 'image_name' or 'plugin.name' is required to start the container.")
+
+full_image_name = f"{registry.rstrip('/')}/{image_name}" if registry else image_name
+
+port = "[[ template.params.port or "" ]]"
+port_external = "[[ template.params.port_external or template.params.port or "" ]]"
+
+# Standard docker run command with --rm for cleanup
+# Note: 'run' (subprocess.run), 'OstrichException' and '_dryRun' are available 
+# in the global scope when called by the ostrich inprocess runner.
+docker_cmd = ["docker", "run", "--rm"]
+
+if port:
+    docker_cmd.extend(["-p", f"{port_external}:{port}"])
+
+# Add any additional arguments passed to 'ost run dev'
+if _argv:
+    docker_cmd.extend(_argv)
+
+docker_cmd.append(full_image_name)
+
+logging.info(f"Starting container: {full_image_name}")
+
+if _dryRun:
+    logging.info(f"Dry run: {' '.join(docker_cmd)}")
+else:
+    result = run(docker_cmd)
+    if result.returncode != 0:
+        raise OstrichException(f"Docker run failed with exit code {result.returncode}")
