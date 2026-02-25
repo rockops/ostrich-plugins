@@ -1,10 +1,8 @@
 import logging
 
 name="[[ plugin.name ]]"
+home="[[ env("HOME") ]]"
 
 logging.info("Dummy step for plugin %s",name)
-
-home="[[ env("HOME") ]]"
-home2="[[ env("NOEXIST") or env("HOME") ]]"
-
-logging.info("home=%s, home2=%s",home,home2)
+logging.info("home=%s",home)
+logging.info("message=[[ template.params.message ]]")

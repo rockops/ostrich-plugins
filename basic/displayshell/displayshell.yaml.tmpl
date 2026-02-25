@@ -1,0 +1,16 @@
+runner:
+  kind: shell
+
+commands:
+- echo "Executing displayshell task for plugin [[ plugin.name ]]"
+
+- |
+  echo "Current directory is $(pwd)"
+  echo "List of files in current directory:"
+  ls -F
+
+- echo Message from params=[[ template.params.message ]]
+- echo Environment variable MY_SHELL_VAR=${MY_SHELL_VAR}
+
+env:
+  MY_SHELL_VAR: "This is a local environment variable"

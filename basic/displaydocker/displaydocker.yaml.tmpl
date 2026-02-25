@@ -10,7 +10,7 @@ commands:
     echo ${TEST_VAR}
     pwd
     ls -al
-    cat ostrich.yaml
+    cat [[ "ostrich.yaml" | here ]]
     cat ${TEMPLATE_DIR}/${OPERATION}/data.txt
     touch test.txt
     ls -la
@@ -43,9 +43,12 @@ commands:
   image: kurrier/alpine-jq:latest
 
 - pwd
-- ls -la
-- echo plop
+
+- | 
+  echo ">>> Listing files" 
+  ls
+  echo "<<< Done"
 
 env:
-  TEST_VAR: "Hello from displaydocker template"
+  TEST_VAR: "[[ template.params.message ]]"
 

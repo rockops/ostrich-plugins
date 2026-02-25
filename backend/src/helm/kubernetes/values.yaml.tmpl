@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: [[ (template.params.registry | noslash + "/" if template.params.registry else "") + (template.params.image_name or plugin.name) ]]
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   tag: "latest"
 
 service:

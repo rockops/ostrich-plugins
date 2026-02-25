@@ -1,5 +1,5 @@
 name: basic
-version: 1.0.2
+version: 1.0.3
 description: "A basic Ostrich plugin"
 # default runner for operations in this template
 runner:

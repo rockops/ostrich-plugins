@@ -1,0 +1,30 @@
+# ====== go backend configuration =======
+plugin:
+  # Name of the plugin
+  name: my-go-backend
+  # Version of the plugin
+  version: 0.0.1
+  # Short description
+  business_name: My Go Backend Application
+
+template:
+  # Kind of template to use
+  kind: backend
+  
+  params:
+    port_external: 8083
+    input:
+      # relative path to the source folder
+      src: src
+    # Name of the resulting docker image.
+    image_name: my-go-backend
+    registry: harbor.kubelb.home/ostrich/docker
+    
+    kubernetes:
+      exposure:
+        hostname: my-go-backend.kubelb.home
+
+    gateway:
+      create: false
+      name: envoy
+      namespace: envoy-gateway

@@ -9,7 +9,7 @@ plugin:
 template:
   # Kind of template to use
   kind: basic
-  # Container runtime to use
+  # [Optional] Container runtime to use. Default is docker
   runtime: docker
 
   params:
